@@ -1,7 +1,18 @@
--- White Cat Hub (Key System Edition)
+-- White Cat Hub (Draggable Key System & Auto-Save)
 local CoreGui, Players, RunService, UserInputService = game:GetService("CoreGui"), game:GetService("Players"), game:GetService("RunService"), game:GetService("UserInputService")
 local lplayer = Players.LocalPlayer
 local correctKey = "Kikicatwalk"
+local fileName = "WhiteCatKey.txt"
+
+-- Auto-Save Logic
+local function saveKey()
+    if writefile then writefile(fileName, correctKey) end
+end
+
+local function hasSavedKey()
+    if isfile and isfile(fileName) then return readfile(fileName) == correctKey end
+    return false
+end
 
 if CoreGui:FindFirstChild("WhiteCatHub") then CoreGui.WhiteCatHub:Destroy() end
 local sg = Instance.new("ScreenGui", CoreGui); sg.Name = "WhiteCatHub"
@@ -9,96 +20,69 @@ local sg = Instance.new("ScreenGui", CoreGui); sg.Name = "WhiteCatHub"
 local meow = Instance.new("Sound", sg)
 meow.SoundId = "rbxassetid://12222200"; meow.Volume = 0.6
 
--- --- KEY SYSTEM UI ---
-local KeyFrame = Instance.new("Frame", sg)
-KeyFrame.Size = UDim2.new(0, 250, 0, 150); KeyFrame.Position = UDim2.new(0.5, -125, 0.4, 0)
-KeyFrame.BackgroundColor3 = Color3.fromRGB(255, 240, 245)
-Instance.new("UICorner", KeyFrame).CornerRadius = UDim.new(0, 15)
-
-local KeyTitle = Instance.new("TextLabel", KeyFrame)
-KeyTitle.Size = UDim2.new(1, 0, 0, 40); KeyTitle.Text = "Enter Key"
-KeyTitle.TextColor3 = Color3.fromRGB(255, 182, 193); KeyTitle.Font = "GothamBold"; KeyTitle.TextSize = 16; KeyTitle.BackgroundTransparency = 1
-
-local KeyInput = Instance.new("TextBox", KeyFrame)
-KeyInput.Size = UDim2.new(0.8, 0, 0, 35); KeyInput.Position = UDim2.new(0.1, 0, 0.35, 0)
-KeyInput.PlaceholderText = "Type Key Here..."; KeyInput.Text = ""
-KeyInput.BackgroundColor3 = Color3.new(1, 1, 1); KeyInput.Font = "Gotham"; KeyInput.TextSize = 14
-Instance.new("UICorner", KeyInput)
-
-local CheckBtn = Instance.new("TextButton", KeyFrame)
-CheckBtn.Size = UDim2.new(0.8, 0, 0, 30); CheckBtn.Position = UDim2.new(0.1, 0, 0.7, 0)
-CheckBtn.Text = "Unlock Hub"; CheckBtn.BackgroundColor3 = Color3.fromRGB(255, 182, 193)
-CheckBtn.TextColor3 = Color3.new(1, 1, 1); CheckBtn.Font = "GothamBold"
-Instance.new("UICorner", CheckBtn)
-
--- --- MAIN HUB UI (Start Hidden) ---
+-- Main Hub UI
 local main = Instance.new("Frame", sg)
 main.Size = UDim2.new(0, 250, 0, 340); main.Position = UDim2.new(0.5, -125, 0.3, 0)
 main.BackgroundColor3 = Color3.fromRGB(255, 255, 255); main.Visible = false
+main.Active = true; main.Draggable = true
 Instance.new("UICorner", main).CornerRadius = UDim.new(0, 15)
-
-local t = Instance.new("TextLabel", main); t.Size = UDim2.new(1, 0, 0, 40); t.Text = "White Cat Hub"
-t.TextColor3 = Color3.fromRGB(255, 182, 193); t.Font = "GothamBold"; t.TextSize = 16; t.BackgroundTransparency = 1
-
-local credits = Instance.new("TextLabel", main)
-credits.Size = UDim2.new(1, 0, 0, 20); credits.Position = UDim2.new(0, 0, 1, -20)
-credits.Text = "maded by : kiki"; credits.TextColor3 = Color3.fromRGB(255, 182, 193)
-credits.Font = "GothamItalic"; credits.TextSize = 11; credits.BackgroundTransparency = 1
 
 local toggleBtn = Instance.new("TextButton", sg)
 toggleBtn.Size = UDim2.new(0, 45, 0, 45); toggleBtn.Position = UDim2.new(0, 15, 0.5, 0)
 toggleBtn.Text = "CAT"; toggleBtn.BackgroundColor3 = Color3.new(1, 1, 1); toggleBtn.Visible = false
 Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(1, 0)
-toggleBtn.MouseButton1Click:Connect(function() meow:Play(); main.Visible = not main.Visible end)
 
--- Key Logic
-CheckBtn.MouseButton1Click:Connect(function()
-    if KeyInput.Text == correctKey then
-        meow:Play()
-        KeyFrame:Destroy()
-        toggleBtn.Visible = true
-        main.Visible = true
-    else
-        KeyInput.Text = ""; KeyInput.PlaceholderText = "Wrong Key!"
-        task.wait(1)
-        KeyInput.PlaceholderText = "Type Key Here..."
-    end
-end)
+-- Unlock Hub
+local function UnlockHub()
+    if meow then meow:Play() end
+    if sg:FindFirstChild("KeyFrame") then sg.KeyFrame:Destroy() end
+    toggleBtn.Visible = true
+    main.Visible = true
+    saveKey()
+end
 
--- Functions
-local function BringItems(itemName, targetName)
-    local target = workspace:FindFirstChild(targetName, true)
-    if target then
-        local cf = target:IsA("Model") and (target.PrimaryPart and target.PrimaryPart.CFrame or target:FindFirstChildWhichIsA("BasePart").CFrame) or target.CFrame
-        for _, v in pairs(workspace:GetDescendants()) do
-            if v.Name:lower():find(itemName:lower()) and (v:IsA("BasePart") or v:IsA("Model")) then
-                local p = v:IsA("Model") and (v.PrimaryPart or v:FindFirstChildWhichIsA("BasePart")) or v
-                if p then p.CFrame = cf + Vector3.new(0, 2, 0) end
-            end
+-- Draggable Key Frame
+if not hasSavedKey() then
+    local KeyFrame = Instance.new("Frame", sg); KeyFrame.Name = "KeyFrame"
+    KeyFrame.Size = UDim2.new(0, 250, 0, 150); KeyFrame.Position = UDim2.new(0.5, -125, 0.4, 0)
+    KeyFrame.BackgroundColor3 = Color3.fromRGB(255, 240, 245)
+    KeyFrame.Active = true; KeyFrame.Draggable = true -- Now Draggable
+    Instance.new("UICorner", KeyFrame)
+
+    local KeyTitle = Instance.new("TextLabel", KeyFrame)
+    KeyTitle.Size = UDim2.new(1, 0, 0, 35); KeyTitle.Text = "Kiki's Key System"; KeyTitle.BackgroundTransparency = 1
+    KeyTitle.TextColor3 = Color3.fromRGB(255, 182, 193); KeyTitle.Font = "GothamBold"
+
+    local KeyInput = Instance.new("TextBox", KeyFrame)
+    KeyInput.Size = UDim2.new(0.8, 0, 0, 35); KeyInput.Position = UDim2.new(0.1, 0, 0.35, 0)
+    KeyInput.PlaceholderText = "Enter Key..."; KeyInput.Text = ""; KeyInput.BackgroundColor3 = Color3.new(1, 1, 1)
+    Instance.new("UICorner", KeyInput)
+
+    local CheckBtn = Instance.new("TextButton", KeyFrame)
+    CheckBtn.Size = UDim2.new(0.8, 0, 0, 35); CheckBtn.Position = UDim2.new(0.1, 0, 0.7, 0)
+    CheckBtn.Text = "Check Key"; CheckBtn.BackgroundColor3 = Color3.fromRGB(255, 182, 193); CheckBtn.TextColor3 = Color3.new(1, 1, 1)
+    Instance.new("UICorner", CheckBtn)
+
+    CheckBtn.MouseButton1Click:Connect(function()
+        if KeyInput.Text == correctKey then
+            CheckBtn.Text = "Success!"; task.wait(0.5); UnlockHub()
+        else
+            KeyInput.Text = ""; KeyInput.PlaceholderText = "Invalid Key!"
         end
-    end
+    end)
+else
+    UnlockHub()
 end
 
-local function CreateSaplingWall()
-    local campfire = workspace:FindFirstChild("Campfire", true)
-    if not campfire then return end
-    local center = (campfire.PrimaryPart and campfire.PrimaryPart.Position) or campfire:FindFirstChildWhichIsA("BasePart").Position
-    local found = {}
-    for _, v in pairs(workspace:GetDescendants()) do
-        if v.Name:lower():find("sapling") then table.insert(found, v) end
-    end
-    for i = 1, math.min(#found, 10) do
-        local angle = (i / 10) * math.pi * 2
-        local targetPos = center + Vector3.new(math.cos(angle) * 12, 0, math.sin(angle) * 12)
-        local part = found[i]:IsA("Model") and (found[i].PrimaryPart or found[i]:FindFirstChildWhichIsA("BasePart")) or found[i]
-        if part then part.CFrame = CFrame.new(targetPos) end
-    end
-end
+-- Hub Items
+local t = Instance.new("TextLabel", main); t.Size = UDim2.new(1, 0, 0, 40); t.Text = "White Cat Hub"
+t.TextColor3 = Color3.fromRGB(255, 182, 193); t.Font = "GothamBold"; t.TextSize = 16; t.BackgroundTransparency = 1
+local credits = Instance.new("TextLabel", main); credits.Size = UDim2.new(1, 0, 0, 20); credits.Position = UDim2.new(0, 0, 1, -20)
+credits.Text = "maded by : kiki"; credits.TextColor3 = Color3.fromRGB(255, 182, 193); credits.BackgroundTransparency = 1
 
--- UI Content
-local container = Instance.new("ScrollingFrame", main)
-container.Size = UDim2.new(1, -20, 1, -90); container.Position = UDim2.new(0, 10, 0, 50); container.BackgroundTransparency = 1
-container.ScrollBarThickness = 0; Instance.new("UIListLayout", container).Padding = UDim.new(0, 5)
+toggleBtn.MouseButton1Click:Connect(function() meow:Play(); main.Visible = not main.Visible end)
+local container = Instance.new("ScrollingFrame", main); container.Size = UDim2.new(1, -20, 1, -90); container.Position = UDim2.new(0, 10, 0, 50); container.BackgroundTransparency = 1; container.ScrollBarThickness = 0
+Instance.new("UIListLayout", container).Padding = UDim.new(0, 5)
 
 local function AddBtn(txt, cb)
     local b = Instance.new("TextButton", container); b.Size = UDim2.new(1, 0, 0, 32); b.Text = txt
@@ -106,7 +90,17 @@ local function AddBtn(txt, cb)
     b.MouseButton1Click:Connect(cb)
 end
 
-AddBtn("Auto Sapling Wall", CreateSaplingWall)
-AddBtn("Logs to Bench Ultra", function() BringItems("Log", "Crafting Table") end)
-AddBtn("Scrap to Bench Ultra", function() BringItems("Scrap", "Crafting Table") end)
-AddBtn("Ultra All to Campfire", function() BringItems("Log", "Campfire") BringItems("Scrap", "Campfire") end)
+AddBtn("Auto Sapling Wall", function()
+    local campfire = workspace:FindFirstChild("Campfire", true)
+    if campfire then
+        local pos = (campfire.PrimaryPart and campfire.PrimaryPart.Position) or campfire:FindFirstChildWhichIsA("BasePart").Position
+        local saplings = {}
+        for _, v in pairs(workspace:GetDescendants()) do if v.Name:lower():find("sapling") then table.insert(saplings, v) end end
+        for i = 1, math.min(#saplings, 10) do
+            local angle = (i / 10) * math.pi * 2
+            local target = pos + Vector3.new(math.cos(angle) * 12, 0, math.sin(angle) * 12)
+            local p = saplings[i]:IsA("Model") and (saplings[i].PrimaryPart or saplings[i]:FindFirstChildWhichIsA("BasePart")) or saplings[i]
+            if p then p.CFrame = CFrame.new(target) end
+        end
+    end
+end)
