@@ -1,4 +1,4 @@
--- White Cat Hub Final (Fly + Auto-Eat + Rescue + Key)
+-- White Cat Hub Final (All-in-One: Fly + Auto Eat + Rescue + Auto Rescue + TP + ESP + Auto Chop + Key)
 local CoreGui, Players, RunService, UserInputService, TweenService = game:GetService("CoreGui"), game:GetService("Players"), game:GetService("RunService"), game:GetService("UserInputService"), game:GetService("TweenService")
 local lplayer = Players.LocalPlayer
 local correctKey = "Kikicatwalk"
@@ -10,14 +10,13 @@ local sg = Instance.new("ScreenGui", CoreGui); sg.Name = "WhiteCatHub"
 local meow = Instance.new("Sound", sg); meow.SoundId = "rbxassetid://5104257032"; meow.Volume = 1
 
 local function bounce(obj)
-    local ti = TweenInfo.new(0.1, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
     local oldSize = obj.Size
     obj:TweenSize(UDim2.new(oldSize.X.Scale * 0.85, oldSize.X.Offset, oldSize.Y.Scale * 0.85, oldSize.Y.Offset), "Out", "Quad", 0.1, true)
     task.wait(0.1)
     obj:TweenSize(oldSize, "Out", "Back", 0.1, true)
 end
 
--- Main UI Setup
+-- Main UI
 local main = Instance.new("Frame", sg)
 main.Size = UDim2.new(0, 320, 0, 420); main.Position = UDim2.new(0.5, -160, 0.3, 0)
 main.BackgroundColor3 = Color3.new(1, 1, 1); main.Visible = false; main.Active = true; main.Draggable = true
@@ -52,9 +51,12 @@ local function AddBtn(pg, txt, cb)
     b.MouseButton1Click:Connect(function() meow:Play(); bounce(b); cb() end)
 end
 
-local mainPg = CreateTab("Main", true); local espPg = CreateTab("ESP"); local tpPg = CreateTab("TP"); local miscPg = CreateTab("Misc")
+local mainPg = CreateTab("Main", true)
+local espPg = CreateTab("ESP")
+local tpPg = CreateTab("TP")
+local miscPg = CreateTab("Misc")
 
--- --- FLY LOGIC ---
+-- --- FLY ---
 local flying = false
 AddBtn(miscPg, "Toggle Fly", function()
     flying = not flying
@@ -74,7 +76,7 @@ AddBtn(miscPg, "Toggle Fly", function()
     end
 end)
 
--- --- AUTO EAT LOGIC ---
+-- --- AUTO EAT ---
 local autoEat = false
 AddBtn(mainPg, "Toggle Auto Eat", function()
     autoEat = not autoEat
@@ -92,7 +94,7 @@ AddBtn(mainPg, "Toggle Auto Eat", function()
     end)
 end)
 
--- --- THE REST (Rescue, TP, Speed, ESP) ---
+-- --- RESCUE ---
 AddBtn(mainPg, "Rescue All Kids", function()
     local kids = {"Dino Kid", "Kraken Kid", "Squid Kid", "Koala Kid"}
     for _, k in pairs(kids) do
@@ -106,17 +108,162 @@ AddBtn(mainPg, "Rescue All Kids", function()
     end
 end)
 
+-- --- TP ---
 AddBtn(tpPg, "TP Campfire", function() 
     local t = workspace:FindFirstChild("Campfire", true)
     if t then lplayer.Character.HumanoidRootPart.CFrame = t:GetModelCFrame() or t.CFrame end
 end)
 
+-- --- AUTO RESCUE ---
+local autoRescue = false
+AddBtn(tpPg, "Toggle Auto Rescue", function()
+    autoRescue = not autoRescue
+    task.spawn(function()
+        while autoRescue do
+            if lplayer.Character and lplayer.Character:FindFirstChild("HumanoidRootPart") then
+                local kids = {"Dino Kid", "Kraken Kid", "Squid Kid", "Koala Kid"}
+                for _, kidName in pairs(kids) do
+                    local kid = workspace:FindFirstChild(kidName, true)
+                    if kid then
+                        local kidPart = kid:FindFirstChild("HumanoidRootPart") or kid:FindFirstChildWhichIsA("BasePart")
+                        if kidPart then
+                            lplayer.Character.HumanoidRootPart.CFrame = kidPart.CFrame + Vector3.new(0,3,0)
+                            task.wait(0.5)
+                            kidPart.CFrame = lplayer.Character.HumanoidRootPart.CFrame + Vector3.new(0,-2,0)
+                        end
+                    end
+                end
+            end
+            task.wait(1)
+        end
+    end)
+end)
+
+-- --- MISC ---
 AddBtn(miscPg, "2x Speed & Inf Stamina", function()
     lplayer.Character.Humanoid.WalkSpeed = 32
     _G.stam = true; task.spawn(function() while _G.stam do local s = lplayer.Character:FindFirstChild("Stamina", true) if s then s.Value = 100 end task.wait(0.5) end end)
 end)
 
--- Key System Logic
+-- --- ESP FOR ANIMALS + Chests ---
+local espEnabled = false
+local espObjects = {}
+AddBtn(espPg, "Toggle ESP (Animals + Chests)", function()
+    espEnabled = not espEnabled
+    if not espEnabled then
+        for _, data in pairs(espObjects) do
+            if data.Highlight then data.Highlight:Destroy() end
+            if data.Label then data.Label:Destroy() end
+        end
+        espObjects = {}
+        return
+    end
+
+    task.spawn(function()
+        while espEnabled do
+            local animals = {"Bear", "Wolf", "Fox", "Deer", "Boar"}
+            local chests = {"Chest", "TreasureChest"}
+
+            for _, objName in pairs(animals) do
+                local obj = workspace:FindFirstChild(objName, true)
+                if obj and obj:FindFirstChildWhichIsA("BasePart") then
+                    local part = obj:FindFirstChildWhichIsA("BasePart")
+                    if not espObjects[obj] then
+                        local hl = Instance.new("Highlight")
+                        hl.Adornee = obj
+                        hl.FillColor = Color3.fromRGB(255,0,0)
+                        hl.FillTransparency = 0.7
+                        hl.OutlineColor = Color3.fromRGB(255,255,255)
+                        hl.OutlineTransparency = 0
+                        hl.Parent = obj
+
+                        local bg = Instance.new("BillboardGui")
+                        bg.Adornee = part
+                        bg.Size = UDim2.new(0,120,0,40)
+                        bg.AlwaysOnTop = true
+                        bg.StudsOffset = Vector3.new(0,3,0)
+                        bg.Parent = obj
+
+                        local label = Instance.new("TextLabel")
+                        label.Size = UDim2.new(1,0,1,0)
+                        label.BackgroundTransparency = 1
+                        label.TextColor3 = Color3.fromRGB(255,255,255)
+                        label.TextScaled = true
+                        label.Font = Enum.Font.GothamBold
+                        label.Parent = bg
+
+                        espObjects[obj] = {Highlight=hl, Label=label, Billboard=bg}
+                    end
+                    local dist = math.floor((lplayer.Character.HumanoidRootPart.Position - part.Position).Magnitude)
+                    espObjects[obj].Label.Text = objName.." — "..dist.."m"
+                end
+            end
+
+            for _, objName in pairs(chests) do
+                local obj = workspace:FindFirstChild(objName, true)
+                if obj and obj:FindFirstChildWhichIsA("BasePart") then
+                    local part = obj:FindFirstChildWhichIsA("BasePart")
+                    if not espObjects[obj] then
+                        local hl = Instance.new("Highlight")
+                        hl.Adornee = obj
+                        hl.FillColor = Color3.fromRGB(0,255,0)
+                        hl.FillTransparency = 0.7
+                        hl.OutlineColor = Color3.fromRGB(255,255,255)
+                        hl.OutlineTransparency = 0
+                        hl.Parent = obj
+
+                        local bg = Instance.new("BillboardGui")
+                        bg.Adornee = part
+                        bg.Size = UDim2.new(0,120,0,40)
+                        bg.AlwaysOnTop = true
+                        bg.StudsOffset = Vector3.new(0,3,0)
+                        bg.Parent = obj
+
+                        local label = Instance.new("TextLabel")
+                        label.Size = UDim2.new(1,0,1,0)
+                        label.BackgroundTransparency = 1
+                        label.TextColor3 = Color3.fromRGB(0,255,0)
+                        label.TextScaled = true
+                        label.Font = Enum.Font.GothamBold
+                        label.Parent = bg
+
+                        espObjects[obj] = {Highlight=hl, Label=label, Billboard=bg}
+                    end
+                    local dist = math.floor((lplayer.Character.HumanoidRootPart.Position - part.Position).Magnitude)
+                    espObjects[obj].Label.Text = objName.." — "..dist.."m"
+                end
+            end
+
+            task.wait(0.5)
+        end
+    end)
+end)
+
+-- --- AUTO CHOP TREES ---
+local autoChop = false
+AddBtn(miscPg, "Toggle Auto Chop Trees", function()
+    autoChop = not autoChop
+    task.spawn(function()
+        while autoChop do
+            if lplayer.Character and lplayer.Backpack:FindFirstChild("Axe") then
+                local axe = lplayer.Backpack:FindFirstChild("Axe")
+                local trees = workspace:GetDescendants()
+                for _, t in pairs(trees) do
+                    if t.Name:match("Tree") and t:IsA("BasePart") then
+                        axe.Parent = lplayer.Character
+                        lplayer.Character.HumanoidRootPart.CFrame = t.CFrame + Vector3.new(0,3,0)
+                        axe:Activate()
+                        task.wait(0.5)
+                        axe.Parent = lplayer.Backpack
+                    end
+                end
+            end
+            task.wait(1)
+        end
+    end)
+end)
+
+-- Key System
 local function Unlock() meow:Play(); if sg:FindFirstChild("KeyFrame") then sg.KeyFrame:Destroy() end; toggleBtn.Visible = true; main.Visible = true; if writefile then writefile(fileName, correctKey) end end
 if not (isfile and isfile(fileName) and readfile(fileName) == correctKey) then
     local kf = Instance.new("Frame", sg); kf.Name = "KeyFrame"; kf.Size = UDim2.new(0, 250, 0, 160); kf.Position = UDim2.new(0.5, -125, 0.4, 0); kf.BackgroundColor3 = Color3.fromRGB(255, 240, 245); kf.Active = true; kf.Draggable = true; Instance.new("UICorner", kf)
@@ -125,4 +272,5 @@ if not (isfile and isfile(fileName) and readfile(fileName) == correctKey) then
     kb.MouseButton1Click:Connect(function() if ki.Text == correctKey then Unlock() end end)
 else Unlock() end
 
+-- Credits
 local credits = Instance.new("TextLabel", main); credits.Size = UDim2.new(1, 0, 0, 20); credits.Position = UDim2.new(0, 0, 1, -20); credits.Text = "maded by : kiki"; credits.TextColor3 = Color3.fromRGB(255, 182, 193); credits.BackgroundTransparency = 1
