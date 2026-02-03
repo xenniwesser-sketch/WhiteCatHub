@@ -75,4 +75,3 @@ gui:Destroy()
 
 -- Execute Main Script
 loadstring(game:HttpGet("https://raw.githubusercontent.com", true))()
-
