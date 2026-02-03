@@ -1,48 +1,46 @@
--- White Cat Hub (Hello Kitty Edition)
+-- White Cat Hub (Delta Optimized - 3s Intro)
 local CoreGui, Players, RunService, UserInputService = game:GetService("CoreGui"), game:GetService("Players"), game:GetService("RunService"), game:GetService("UserInputService")
 local lplayer = Players.LocalPlayer
 
--- --- HELLO KITTY INTRO ANIMATION (PINK THEME, NO EMOJIS) ---
+-- --- FAST HELLO KITTY INTRO (3 SECONDS) ---
 local function PlayIntro()
     local introSg = Instance.new("ScreenGui", CoreGui); introSg.Name = "IntroScreen"
     
     local bg = Instance.new("Frame", introSg)
-    bg.Size = UDim2.new(1, 0, 1, 0); bg.BackgroundColor3 = Color3.fromRGB(255, 240, 245); bg.BackgroundTransparency = 0
+    bg.Size = UDim2.new(1, 0, 1, 0); bg.BackgroundColor3 = Color3.fromRGB(255, 240, 245)
     
     local introImg = Instance.new("ImageLabel", bg)
-    introImg.Size = UDim2.new(0, 0, 0, 0)
-    introImg.Position = UDim2.new(0.5, 0, 0.5, 0)
-    -- Using a generic cute cat/Hello Kitty asset ID
-    introImg.Image = "rbxassetid://13580556209" -- Pink Hello Kitty Decal
-    introImg.BackgroundTransparency = 1
-    introImg.AnchorPoint = Vector2.new(0.5, 0.5)
+    introImg.Size = UDim2.new(0, 0, 0, 0); introImg.Position = UDim2.new(0.5, 0, 0.5, 0)
+    introImg.Image = "rbxassetid://13580556209" -- Pink Hello Kitty
+    introImg.BackgroundTransparency = 1; introImg.AnchorPoint = Vector2.new(0.5, 0.5)
     
-    local loadingText = Instance.new("TextLabel", bg)
-    loadingText.Size = UDim2.new(1, 0, 0, 30); loadingText.Position = UDim2.new(0, 0, 0.8, 0)
-    loadingText.BackgroundTransparency = 1; loadingText.Text = "Loading the Hub..."
-    loadingText.TextColor3 = Color3.fromRGB(255, 182, 193); loadingText.Font = "GothamBold"; loadingText.TextSize = 18
+    local bowLeft = Instance.new("ImageLabel", bg)
+    bowLeft.Size = UDim2.new(0, 50, 0, 50); bowLeft.Position = UDim2.new(0.2, 0, 0.2, 0)
+    bowLeft.Image = "rbxassetid://12128711437"; bowLeft.BackgroundTransparency = 1 -- Pink Bow
 
-    introImg:TweenSize(UDim2.new(0, 200, 0, 200), "Out", "Elastic", 1.5)
-    task.wait(2.5)
-    introImg:TweenSize(UDim2.new(0, 0, 0, 0), "In", "Quad", 0.5)
-    task.wait(0.6)
+    local bowRight = Instance.new("ImageLabel", bg)
+    bowRight.Size = UDim2.new(0, 50, 0, 50); bowRight.Position = UDim2.new(0.8, 0, 0.2, 0)
+    bowRight.Image = "rbxassetid://12128711437"; bowRight.BackgroundTransparency = 1
+
+    -- Animation Sequence (Total 3s)
+    introImg:TweenSize(UDim2.new(0, 180, 0, 180), "Out", "Back", 0.5)
+    task.wait(2.2) -- Stay time
+    introImg:TweenSize(UDim2.new(0, 0, 0, 0), "In", "Quad", 0.3)
+    task.wait(0.3)
     introSg:Destroy()
 end
 task.spawn(PlayIntro)
 
--- --- MAIN SCRIPT EXECUTION AFTER INTRO ---
+-- --- MAIN HUB ---
 if CoreGui:FindFirstChild("WhiteCatHub") then CoreGui.WhiteCatHub:Destroy() end
 local sg = Instance.new("ScreenGui", CoreGui); sg.Name = "WhiteCatHub"
 
 local meow = Instance.new("Sound", sg)
-meow.SoundId = "rbxassetid://12222200"
-meow.Volume = 0.5
+meow.SoundId = "rbxassetid://12222200"; meow.Volume = 0.6
 
 local main = Instance.new("Frame", sg)
-main.Size = UDim2.new(0, 260, 0, 360)
-main.Position = UDim2.new(0.5, -130, 0.3, 0)
-main.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-main.Active = true; main.Draggable = true; main.Visible = false
+main.Size = UDim2.new(0, 250, 0, 340); main.Position = UDim2.new(0.5, -125, 0.3, 0)
+main.BackgroundColor3 = Color3.fromRGB(255, 255, 255); main.Visible = false
 Instance.new("UICorner", main).CornerRadius = UDim.new(0, 15)
 
 local t = Instance.new("TextLabel", main); t.Size = UDim2.new(1, 0, 0, 40); t.Text = "White Cat Hub"
@@ -51,27 +49,24 @@ t.TextColor3 = Color3.fromRGB(255, 182, 193); t.Font = "GothamBold"; t.TextSize 
 local credits = Instance.new("TextLabel", main)
 credits.Size = UDim2.new(1, 0, 0, 20); credits.Position = UDim2.new(0, 0, 1, -20)
 credits.Text = "maded by : kiki"; credits.TextColor3 = Color3.fromRGB(255, 182, 193)
-credits.Font = "GothamItalic"; credits.TextSize = 12; credits.BackgroundTransparency = 1
+credits.Font = "GothamItalic"; credits.TextSize = 11; credits.BackgroundTransparency = 1
 
+-- Toggle Button (Compact)
 local toggleBtn = Instance.new("TextButton", sg)
-toggleBtn.Size = UDim2.new(0, 50, 0, 50); toggleBtn.Position = UDim2.new(0, 10, 0.5, 0)
-toggleBtn.Text = "CAT"; toggleBtn.TextSize = 14; toggleBtn.BackgroundColor3 = Color3.new(1,1,1)
+toggleBtn.Size = UDim2.new(0, 45, 0, 45); toggleBtn.Position = UDim2.new(0, 15, 0.5, 0)
+toggleBtn.Text = "CAT"; toggleBtn.BackgroundColor3 = Color3.new(1, 1, 1)
 Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(1, 0)
-toggleBtn.MouseButton1Click:Connect(function() 
-    meow:Play()
-    main.Visible = not main.Visible 
-end)
+toggleBtn.MouseButton1Click:Connect(function() meow:Play(); main.Visible = not main.Visible end)
 
-local function BringItems(itemName, targetName, isUltra)
+-- Functional Logic
+local function BringItems(itemName, targetName)
     local target = workspace:FindFirstChild(targetName, true)
-    if not target then return end
-    local targetCF = target:IsA("Model") and (target.PrimaryPart and target.PrimaryPart.CFrame or target:FindFirstChildWhichIsA("BasePart").CFrame) or target.CFrame
-    for _, v in pairs(workspace:GetDescendants()) do
-        if v.Name:lower():find(itemName:lower()) and (v:IsA("BasePart") or v:IsA("Model")) then
-            local part = v:IsA("Model") and (v.PrimaryPart or v:FindFirstChildWhichIsA("BasePart")) or v
-            if part then 
-                part.CFrame = targetCF + Vector3.new(0, 2, 0)
-                if not isUltra then task.wait(0.05) end
+    if target then
+        local cf = target:IsA("Model") and (target.PrimaryPart and target.PrimaryPart.CFrame or target:FindFirstChildWhichIsA("BasePart").CFrame) or target.CFrame
+        for _, v in pairs(workspace:GetDescendants()) do
+            if v.Name:lower():find(itemName:lower()) and (v:IsA("BasePart") or v:IsA("Model")) then
+                local p = v:IsA("Model") and (v.PrimaryPart or v:FindFirstChildWhichIsA("BasePart")) or v
+                if p then p.CFrame = cf + Vector3.new(0, 2, 0) end
             end
         end
     end
@@ -80,34 +75,31 @@ end
 local function CreateSaplingWall()
     local campfire = workspace:FindFirstChild("Campfire", true)
     if not campfire then return end
-    local center = campfire:IsA("Model") and (campfire.PrimaryPart and campfire.PrimaryPart.Position or campfire:FindFirstChildWhichIsA("BasePart").Position) or campfire.Position
-    local radius = 12
+    local center = (campfire.PrimaryPart and campfire.PrimaryPart.Position) or campfire:FindFirstChildWhichIsA("BasePart").Position
     local found = {}
     for _, v in pairs(workspace:GetDescendants()) do
         if v.Name:lower():find("sapling") then table.insert(found, v) end
     end
     for i = 1, math.min(#found, 10) do
         local angle = (i / 10) * math.pi * 2
-        local targetPos = center + Vector3.new(math.cos(angle) * radius, 0, math.sin(angle) * radius)
+        local targetPos = center + Vector3.new(math.cos(angle) * 12, 0, math.sin(angle) * 12)
         local part = found[i]:IsA("Model") and (found[i].PrimaryPart or found[i]:FindFirstChildWhichIsA("BasePart")) or found[i]
         if part then part.CFrame = CFrame.new(targetPos) end
     end
 end
 
+-- UI List
 local container = Instance.new("ScrollingFrame", main)
-container.Size = UDim2.new(1, -20, 1, -100); container.Position = UDim2.new(0, 10, 0, 60); container.BackgroundTransparency = 1
-Instance.new("UIListLayout", container).Padding = UDim.new(0, 8)
+container.Size = UDim2.new(1, -20, 1, -90); container.Position = UDim2.new(0, 10, 0, 50); container.BackgroundTransparency = 1
+container.ScrollBarThickness = 0; Instance.new("UIListLayout", container).Padding = UDim.new(0, 5)
 
 local function AddBtn(txt, cb)
-    local b = Instance.new("TextButton", container); b.Size = UDim2.new(1, 0, 0, 30); b.Text = txt
+    local b = Instance.new("TextButton", container); b.Size = UDim2.new(1, 0, 0, 32); b.Text = txt
     b.BackgroundColor3 = Color3.fromRGB(245, 245, 245); b.Font = "Gotham"; b.TextSize = 12; Instance.new("UICorner", b)
     b.MouseButton1Click:Connect(cb)
 end
 
-AddBtn("Bring Logs to Bench Ultra", function() BringItems("Log", "Crafting Table", true) end)
-AddBtn("Bring Scrap to Bench Ultra", function() BringItems("Scrap", "Crafting Table", true) end)
-AddBtn("Auto Sapling Wall", function() CreateSaplingWall() end)
-AddBtn("Ultra All to Campfire", function() 
-    BringItems("Log", "Campfire", true) 
-    BringItems("Scrap", "Campfire", true) 
-end)
+AddBtn("Auto Sapling Wall", CreateSaplingWall)
+AddBtn("Logs to Bench Ultra", function() BringItems("Log", "Crafting Table") end)
+AddBtn("Scrap to Bench Ultra", function() BringItems("Scrap", "Crafting Table") end)
+AddBtn("Ultra All to Campfire", function() BringItems("Log", "Campfire") BringItems("Scrap", "Campfire") end)
