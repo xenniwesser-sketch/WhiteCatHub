@@ -1,25 +1,23 @@
--- White Cat Hub Ultimate Final
+-- White Cat Hub Final (Fly + Auto-Eat + Rescue + Key)
 local CoreGui, Players, RunService, UserInputService, TweenService = game:GetService("CoreGui"), game:GetService("Players"), game:GetService("RunService"), game:GetService("UserInputService"), game:GetService("TweenService")
 local lplayer = Players.LocalPlayer
 local correctKey = "Kikicatwalk"
 local fileName = "WhiteCatKey.txt"
 
--- Auto-Save & Cleanup
-local function saveKey() if writefile then writefile(fileName, correctKey) end end
-local function hasSavedKey() if isfile and isfile(fileName) then return readfile(fileName) == correctKey end return false end
+-- Cleanup & Sounds
 if CoreGui:FindFirstChild("WhiteCatHub") then CoreGui.WhiteCatHub:Destroy() end
-
 local sg = Instance.new("ScreenGui", CoreGui); sg.Name = "WhiteCatHub"
 local meow = Instance.new("Sound", sg); meow.SoundId = "rbxassetid://5104257032"; meow.Volume = 1
 
 local function bounce(obj)
+    local ti = TweenInfo.new(0.1, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
     local oldSize = obj.Size
-    obj:TweenSize(UDim2.new(oldSize.X.Scale * 0.8, oldSize.X.Offset, oldSize.Y.Scale * 0.8, oldSize.Y.Offset), "Out", "Quad", 0.1, true)
+    obj:TweenSize(UDim2.new(oldSize.X.Scale * 0.85, oldSize.X.Offset, oldSize.Y.Scale * 0.85, oldSize.Y.Offset), "Out", "Quad", 0.1, true)
     task.wait(0.1)
     obj:TweenSize(oldSize, "Out", "Back", 0.1, true)
 end
 
--- --- MAIN HUB UI ---
+-- Main UI Setup
 local main = Instance.new("Frame", sg)
 main.Size = UDim2.new(0, 320, 0, 420); main.Position = UDim2.new(0.5, -160, 0.3, 0)
 main.BackgroundColor3 = Color3.new(1, 1, 1); main.Visible = false; main.Active = true; main.Draggable = true
@@ -31,17 +29,15 @@ toggleBtn.Text = "CAT"; toggleBtn.BackgroundColor3 = Color3.new(1, 1, 1); toggle
 Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(1, 0)
 toggleBtn.MouseButton1Click:Connect(function() meow:Play(); bounce(toggleBtn); main.Visible = not main.Visible end)
 
--- Tab Setup
+-- Tabs
 local tabContainer = Instance.new("Frame", main)
-tabContainer.Size = UDim2.new(1, 0, 0, 40); tabContainer.Position = UDim2.new(0, 0, 0, 45); tabContainer.BackgroundTransparency = 1
-local tabLayout = Instance.new("UIListLayout", tabContainer); tabLayout.FillDirection = "Horizontal"; tabLayout.HorizontalAlignment = "Center"; tabLayout.Padding = UDim.new(0, 3)
+tabContainer.Size = UDim2.new(1, 0, 0, 35); tabContainer.Position = UDim2.new(0, 0, 0, 45); tabContainer.BackgroundTransparency = 1
+local tabLayout = Instance.new("UIListLayout", tabContainer); tabLayout.FillDirection = "Horizontal"; tabLayout.HorizontalAlignment = "Center"; tabLayout.Padding = UDim.new(0, 2)
 
 local pages = {}
 local function CreateTab(name, active)
-    local btn = Instance.new("TextButton", tabContainer); btn.Size = UDim2.new(0, 55, 0, 25); btn.Text = name
-    btn.BackgroundColor3 = active and Color3.fromRGB(255, 182, 193) or Color3.fromRGB(240, 240, 240)
-    btn.TextColor3 = active and Color3.new(1,1,1) or Color3.new(0.3,0.3,0.3); btn.Font = "GothamBold"; btn.TextSize = 10; Instance.new("UICorner", btn)
-    local pg = Instance.new("ScrollingFrame", main); pg.Size = UDim2.new(1, -20, 1, -120); pg.Position = UDim2.new(0, 10, 0, 95); pg.Visible = active or false; pg.BackgroundTransparency = 1; pg.ScrollBarThickness = 0
+    local btn = Instance.new("TextButton", tabContainer); btn.Size = UDim2.new(0, 50, 0, 25); btn.Text = name; btn.BackgroundColor3 = active and Color3.fromRGB(255, 182, 193) or Color3.fromRGB(240, 240, 240); btn.Font = "GothamBold"; btn.TextSize = 9; Instance.new("UICorner", btn)
+    local pg = Instance.new("ScrollingFrame", main); pg.Size = UDim2.new(1, -20, 1, -110); pg.Position = UDim2.new(0, 10, 0, 85); pg.Visible = active or false; pg.BackgroundTransparency = 1; pg.ScrollBarThickness = 0
     Instance.new("UIListLayout", pg).Padding = UDim.new(0, 5)
     pages[name] = {page = pg, button = btn}
     btn.MouseButton1Click:Connect(function()
@@ -56,52 +52,76 @@ local function AddBtn(pg, txt, cb)
     b.MouseButton1Click:Connect(function() meow:Play(); bounce(b); cb() end)
 end
 
-local mainPg = CreateTab("Main", true); local espPg = CreateTab("ESP"); local tpPg = CreateTab("Teleport"); local miscPg = CreateTab("Misc")
+local mainPg = CreateTab("Main", true); local espPg = CreateTab("ESP"); local tpPg = CreateTab("TP"); local miscPg = CreateTab("Misc")
 
--- --- FEATURES ---
-AddBtn(mainPg, "Auto Rescue All Kids", function()
+-- --- FLY LOGIC ---
+local flying = false
+AddBtn(miscPg, "Toggle Fly", function()
+    flying = not flying
+    if flying then
+        local bv = Instance.new("BodyVelocity", lplayer.Character.HumanoidRootPart)
+        bv.Name = "CatFly"; bv.MaxForce = Vector3.new(9e9, 9e9, 9e9); bv.Velocity = Vector3.new(0,0,0)
+        local bg = Instance.new("BodyGyro", lplayer.Character.HumanoidRootPart)
+        bg.Name = "CatGyro"; bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9); bg.P = 9e4
+        task.spawn(function()
+            while flying do
+                bv.Velocity = workspace.CurrentCamera.CFrame.LookVector * 60
+                bg.CFrame = workspace.CurrentCamera.CFrame
+                task.wait()
+            end
+            bv:Destroy(); bg:Destroy()
+        end)
+    end
+end)
+
+-- --- AUTO EAT LOGIC ---
+local autoEat = false
+AddBtn(mainPg, "Toggle Auto Eat", function()
+    autoEat = not autoEat
+    task.spawn(function()
+        while autoEat do
+            local hunger = lplayer:FindFirstChild("Hunger", true) or lplayer.Character:GetAttribute("Hunger")
+            if hunger and (hunger.Value or hunger) < 70 then
+                local food = lplayer.Backpack:FindFirstChild("Berry") or lplayer.Backpack:FindFirstChild("Meat") or lplayer.Backpack:FindFirstChild("Apple") or lplayer.Backpack:FindFirstChild("Cooked Meat")
+                if food then
+                    food.Parent = lplayer.Character; food:Activate(); task.wait(0.5); food.Parent = lplayer.Backpack
+                end
+            end
+            task.wait(2)
+        end
+    end)
+end)
+
+-- --- THE REST (Rescue, TP, Speed, ESP) ---
+AddBtn(mainPg, "Rescue All Kids", function()
     local kids = {"Dino Kid", "Kraken Kid", "Squid Kid", "Koala Kid"}
     for _, k in pairs(kids) do
         local kid = workspace:FindFirstChild(k, true)
         if kid and lplayer.Character then
             lplayer.Character.HumanoidRootPart.CFrame = kid:GetModelCFrame() or kid.CFrame
-            task.wait(0.5)
+            task.wait(0.6)
             local r = kid:FindFirstChild("HumanoidRootPart") or kid:FindFirstChildWhichIsA("BasePart")
             if r then r.CFrame = lplayer.Character.HumanoidRootPart.CFrame end
         end
     end
 end)
 
-AddBtn(mainPg, "Auto Sapling Wall", function()
-    local campfire = workspace:FindFirstChild("Campfire", true)
-    if not campfire then return end
-    local pos = campfire:GetModelCFrame().Position
-    local saps = {}
-    for _, v in pairs(workspace:GetDescendants()) do if v.Name:lower():find("sapling") then table.insert(saps, v) end end
-    for i = 1, math.min(#saps, 10) do
-        local angle = (i / 10) * math.pi * 2
-        local target = pos + Vector3.new(math.cos(angle) * 12, 0, math.sin(angle) * 12)
-        local p = saps[i]:IsA("Model") and (saps[i].PrimaryPart or saps[i]:FindFirstChildWhichIsA("BasePart")) or saps[i]
-        if p then p.CFrame = CFrame.new(target) end
-    end
+AddBtn(tpPg, "TP Campfire", function() 
+    local t = workspace:FindFirstChild("Campfire", true)
+    if t then lplayer.Character.HumanoidRootPart.CFrame = t:GetModelCFrame() or t.CFrame end
 end)
 
-AddBtn(miscPg, "2x Speed", function() lplayer.Character.Humanoid.WalkSpeed = 32 end)
-AddBtn(miscPg, "Infinite Stamina", function() 
-    _G.infStam = true 
-    task.spawn(function() while _G.infStam do local s = lplayer.Character:FindFirstChild("Stamina", true) if s then s.Value = 100 end task.wait(0.1) end end)
-end)
-AddBtn(miscPg, "Godmode (Invincible)", function()
-    _G.god = true
-    task.spawn(function() while _G.god do lplayer.Character.Humanoid.Health = 100 task.wait(0.1) end end)
+AddBtn(miscPg, "2x Speed & Inf Stamina", function()
+    lplayer.Character.Humanoid.WalkSpeed = 32
+    _G.stam = true; task.spawn(function() while _G.stam do local s = lplayer.Character:FindFirstChild("Stamina", true) if s then s.Value = 100 end task.wait(0.5) end end)
 end)
 
--- --- KEY SYSTEM ---
-local function Unlock() meow:Play(); if sg:FindFirstChild("KeyFrame") then sg.KeyFrame:Destroy() end; toggleBtn.Visible = true; main.Visible = true; saveKey() end
-if not hasSavedKey() then
+-- Key System Logic
+local function Unlock() meow:Play(); if sg:FindFirstChild("KeyFrame") then sg.KeyFrame:Destroy() end; toggleBtn.Visible = true; main.Visible = true; if writefile then writefile(fileName, correctKey) end end
+if not (isfile and isfile(fileName) and readfile(fileName) == correctKey) then
     local kf = Instance.new("Frame", sg); kf.Name = "KeyFrame"; kf.Size = UDim2.new(0, 250, 0, 160); kf.Position = UDim2.new(0.5, -125, 0.4, 0); kf.BackgroundColor3 = Color3.fromRGB(255, 240, 245); kf.Active = true; kf.Draggable = true; Instance.new("UICorner", kf)
     local ki = Instance.new("TextBox", kf); ki.Size = UDim2.new(0.8, 0, 0, 35); ki.Position = UDim2.new(0.1, 0, 0.3, 0); ki.PlaceholderText = "Key..."; Instance.new("UICorner", ki)
-    local kb = Instance.new("TextButton", kf); kb.Size = UDim2.new(0.8, 0, 0, 35); kb.Position = UDim2.new(0.1, 0, 0.65, 0); kb.Text = "Unlock"; kb.BackgroundColor3 = Color3.fromRGB(255, 182, 193); Instance.new("UICorner", kb)
+    local kb = Instance.new("TextButton", kf); kb.Size = UDim2.new(0.8, 0, 0, 35); kb.Position = UDim2.new(0.1, 0, 0.65, 0); kb.Text = "Unlock Hub"; kb.BackgroundColor3 = Color3.fromRGB(255, 182, 193); Instance.new("UICorner", kb)
     kb.MouseButton1Click:Connect(function() if ki.Text == correctKey then Unlock() end end)
 else Unlock() end
 
