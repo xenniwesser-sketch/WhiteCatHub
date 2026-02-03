@@ -1,153 +1,113 @@
+-- White Cat Hub (Hello Kitty Edition)
 local CoreGui, Players, RunService, UserInputService = game:GetService("CoreGui"), game:GetService("Players"), game:GetService("RunService"), game:GetService("UserInputService")
 local lplayer = Players.LocalPlayer
 
+-- --- HELLO KITTY INTRO ANIMATION (PINK THEME, NO EMOJIS) ---
+local function PlayIntro()
+    local introSg = Instance.new("ScreenGui", CoreGui); introSg.Name = "IntroScreen"
+    
+    local bg = Instance.new("Frame", introSg)
+    bg.Size = UDim2.new(1, 0, 1, 0); bg.BackgroundColor3 = Color3.fromRGB(255, 240, 245); bg.BackgroundTransparency = 0
+    
+    local introImg = Instance.new("ImageLabel", bg)
+    introImg.Size = UDim2.new(0, 0, 0, 0)
+    introImg.Position = UDim2.new(0.5, 0, 0.5, 0)
+    -- Using a generic cute cat/Hello Kitty asset ID
+    introImg.Image = "rbxassetid://13580556209" -- Pink Hello Kitty Decal
+    introImg.BackgroundTransparency = 1
+    introImg.AnchorPoint = Vector2.new(0.5, 0.5)
+    
+    local loadingText = Instance.new("TextLabel", bg)
+    loadingText.Size = UDim2.new(1, 0, 0, 30); loadingText.Position = UDim2.new(0, 0, 0.8, 0)
+    loadingText.BackgroundTransparency = 1; loadingText.Text = "Loading the Hub..."
+    loadingText.TextColor3 = Color3.fromRGB(255, 182, 193); loadingText.Font = "GothamBold"; loadingText.TextSize = 18
+
+    introImg:TweenSize(UDim2.new(0, 200, 0, 200), "Out", "Elastic", 1.5)
+    task.wait(2.5)
+    introImg:TweenSize(UDim2.new(0, 0, 0, 0), "In", "Quad", 0.5)
+    task.wait(0.6)
+    introSg:Destroy()
+end
+task.spawn(PlayIntro)
+
+-- --- MAIN SCRIPT EXECUTION AFTER INTRO ---
 if CoreGui:FindFirstChild("WhiteCatHub") then CoreGui.WhiteCatHub:Destroy() end
 local sg = Instance.new("ScreenGui", CoreGui); sg.Name = "WhiteCatHub"
+
+local meow = Instance.new("Sound", sg)
+meow.SoundId = "rbxassetid://12222200"
+meow.Volume = 0.5
+
 local main = Instance.new("Frame", sg)
-main.Size = UDim2.new(0, 350, 0, 480); main.Position = UDim2.new(0.5, -175, 0.3, 0)
-main.BackgroundColor3 = Color3.fromRGB(255, 255, 255); main.Active = true; main.Draggable = true
+main.Size = UDim2.new(0, 260, 0, 360)
+main.Position = UDim2.new(0.5, -130, 0.3, 0)
+main.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+main.Active = true; main.Draggable = true; main.Visible = false
 Instance.new("UICorner", main).CornerRadius = UDim.new(0, 15)
 
--- Tab Navigation
-local tabContainer = Instance.new("Frame", main)
-tabContainer.Size = UDim2.new(1, 0, 0, 40); tabContainer.Position = UDim2.new(0, 0, 0, 45); tabContainer.BackgroundTransparency = 1
-local tabLayout = Instance.new("UIListLayout", tabContainer); tabLayout.FillDirection = "Horizontal"; tabLayout.HorizontalAlignment = "Center"; tabLayout.Padding = UDim.new(0, 5)
+local t = Instance.new("TextLabel", main); t.Size = UDim2.new(1, 0, 0, 40); t.Text = "White Cat Hub"
+t.TextColor3 = Color3.fromRGB(255, 182, 193); t.Font = "GothamBold"; t.TextSize = 16; t.BackgroundTransparency = 1
 
-local pages = {}
-local function CreateTab(name, active)
-    local btn = Instance.new("TextButton", tabContainer)
-    btn.Size = UDim2.new(0, 70, 0, 30); btn.Text = name; btn.BackgroundColor3 = Color3.fromRGB(255, 182, 193)
-    btn.TextColor3 = Color3.fromRGB(255, 255, 255); btn.Font = "GothamBold"; Instance.new("UICorner", btn)
-    
-    local pg = Instance.new("ScrollingFrame", main)
-    pg.Size = UDim2.new(1, -20, 1, -150); pg.Position = UDim2.new(0, 10, 0, 90); pg.Visible = active or false; pg.BackgroundTransparency = 1; pg.ScrollBarThickness = 2
-    Instance.new("UIListLayout", pg).Padding = UDim.new(0, 8)
-    pages[name] = pg
-    btn.MouseButton1Click:Connect(function() for _, p in pairs(pages) do p.Visible = false end pg.Visible = true end)
-    return pg
+local credits = Instance.new("TextLabel", main)
+credits.Size = UDim2.new(1, 0, 0, 20); credits.Position = UDim2.new(0, 0, 1, -20)
+credits.Text = "maded by : kiki"; credits.TextColor3 = Color3.fromRGB(255, 182, 193)
+credits.Font = "GothamItalic"; credits.TextSize = 12; credits.BackgroundTransparency = 1
+
+local toggleBtn = Instance.new("TextButton", sg)
+toggleBtn.Size = UDim2.new(0, 50, 0, 50); toggleBtn.Position = UDim2.new(0, 10, 0.5, 0)
+toggleBtn.Text = "CAT"; toggleBtn.TextSize = 14; toggleBtn.BackgroundColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(1, 0)
+toggleBtn.MouseButton1Click:Connect(function() 
+    meow:Play()
+    main.Visible = not main.Visible 
+end)
+
+local function BringItems(itemName, targetName, isUltra)
+    local target = workspace:FindFirstChild(targetName, true)
+    if not target then return end
+    local targetCF = target:IsA("Model") and (target.PrimaryPart and target.PrimaryPart.CFrame or target:FindFirstChildWhichIsA("BasePart").CFrame) or target.CFrame
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v.Name:lower():find(itemName:lower()) and (v:IsA("BasePart") or v:IsA("Model")) then
+            local part = v:IsA("Model") and (v.PrimaryPart or v:FindFirstChildWhichIsA("BasePart")) or v
+            if part then 
+                part.CFrame = targetCF + Vector3.new(0, 2, 0)
+                if not isUltra then task.wait(0.05) end
+            end
+        end
+    end
 end
 
-local mainPg = CreateTab("Main", true)
-local itemPg = CreateTab("Items")
-local espPg = CreateTab("ESP")
-local exploitPg = CreateTab("Misc")
+local function CreateSaplingWall()
+    local campfire = workspace:FindFirstChild("Campfire", true)
+    if not campfire then return end
+    local center = campfire:IsA("Model") and (campfire.PrimaryPart and campfire.PrimaryPart.Position or campfire:FindFirstChildWhichIsA("BasePart").Position) or campfire.Position
+    local radius = 12
+    local found = {}
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v.Name:lower():find("sapling") then table.insert(found, v) end
+    end
+    for i = 1, math.min(#found, 10) do
+        local angle = (i / 10) * math.pi * 2
+        local targetPos = center + Vector3.new(math.cos(angle) * radius, 0, math.sin(angle) * radius)
+        local part = found[i]:IsA("Model") and (found[i].PrimaryPart or found[i]:FindFirstChildWhichIsA("BasePart")) or found[i]
+        if part then part.CFrame = CFrame.new(targetPos) end
+    end
+end
 
-local function AddBtn(pg, txt, cb)
-    local b = Instance.new("TextButton", pg); b.Size = UDim2.new(1, 0, 0, 35); b.Text = txt
-    b.BackgroundColor3 = Color3.fromRGB(245, 245, 245); b.Font = "Gotham"; Instance.new("UICorner", b)
+local container = Instance.new("ScrollingFrame", main)
+container.Size = UDim2.new(1, -20, 1, -100); container.Position = UDim2.new(0, 10, 0, 60); container.BackgroundTransparency = 1
+Instance.new("UIListLayout", container).Padding = UDim.new(0, 8)
+
+local function AddBtn(txt, cb)
+    local b = Instance.new("TextButton", container); b.Size = UDim2.new(1, 0, 0, 30); b.Text = txt
+    b.BackgroundColor3 = Color3.fromRGB(245, 245, 245); b.Font = "Gotham"; b.TextSize = 12; Instance.new("UICorner", b)
     b.MouseButton1Click:Connect(cb)
 end
 
--- ESP LOGIC
-local function CreateESP(obj, color, name)
-    if obj:FindFirstChild("CatESP") then return end
-    local highlight = Instance.new("Highlight", obj)
-    highlight.Name = "CatESP"
-    highlight.FillColor = color
-    highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
-    
-    local bill = Instance.new("BillboardGui", obj)
-    bill.Name = "CatESPText"
-    bill.Size = UDim2.new(0, 100, 0, 50)
-    bill.AlwaysOnTop = true
-    bill.ExtentsOffset = Vector3.new(0, 3, 0)
-    local label = Instance.new("TextLabel", bill)
-    label.BackgroundTransparency = 1; label.Size = UDim2.new(1, 0, 1, 0)
-    label.Text = name; label.TextColor3 = color; label.Font = "GothamBold"; label.TextSize = 12
-end
-
-local function RemoveESP(tag)
-    for _, v in pairs(workspace:GetDescendants()) do
-        if v.Name == tag or v:FindFirstChild("CatESP") then
-            local h = v:FindFirstChild("CatESP")
-            local b = v:FindFirstChild("CatESPText")
-            if h then h:Destroy() end
-            if b then b:Destroy() end
-        end
-    end
-end
-
--- ESP TAB BUTTONS
-local animalEsp = false
-AddBtn(espPg, "🐾 Toggle Animal ESP", function()
-    animalEsp = not animalEsp
-    if not animalEsp then RemoveESP() return end
-    task.spawn(function()
-        while animalEsp do
-            for _, v in pairs(workspace:GetDescendants()) do
-                local n = v.Name:lower()
-                if n == "wolf" or n == "bear" or n == "bunny" or n == "polar bear" then
-                    CreateESP(v, Color3.fromRGB(255, 100, 100), v.Name)
-                end
-            end
-            task.wait(2)
-        end
-    end)
+AddBtn("Bring Logs to Bench Ultra", function() BringItems("Log", "Crafting Table", true) end)
+AddBtn("Bring Scrap to Bench Ultra", function() BringItems("Scrap", "Crafting Table", true) end)
+AddBtn("Auto Sapling Wall", function() CreateSaplingWall() end)
+AddBtn("Ultra All to Campfire", function() 
+    BringItems("Log", "Campfire", true) 
+    BringItems("Scrap", "Campfire", true) 
 end)
-
-local itemEsp = false
-AddBtn(espPg, "💎 Toggle Item ESP", function()
-    itemEsp = not itemEsp
-    if not itemEsp then RemoveESP() return end
-    task.spawn(function()
-        while itemEsp do
-            for _, v in pairs(workspace:GetDescendants()) do
-                local n = v.Name:lower()
-                if n:find("metal") or n:find("scrap") or n:find("heal") or n:find("bolt") or n:find("log") then
-                    CreateESP(v, Color3.fromRGB(100, 255, 100), v.Name)
-                end
-            end
-            task.wait(2)
-        end
-    end)
-end)
-
--- REST OF YOUR FEATURES (God Mode, Items, Fly, Inf Jump)
--- [Condensed for brevity, same as previous script logic]
-
--- 1. INF JUMP
-local infJumpEnabled = false
-UserInputService.JumpRequest:Connect(function()
-    if infJumpEnabled and lplayer.Character and lplayer.Character:FindFirstChildOfClass("Humanoid") then
-        lplayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
-    end
-end)
-AddBtn(exploitPg, "🦘 Toggle Infinite Jump", function() infJumpEnabled = not infJumpEnabled end)
-
--- 2. NOCLIP
-local noclipEnabled = false
-RunService.Stepped:Connect(function()
-    if noclipEnabled and lplayer.Character then
-        for _, v in pairs(lplayer.Character:GetDescendants()) do if v:IsA("BasePart") then v.CanCollide = false end end
-    end
-end)
-AddBtn(exploitPg, "👻 Toggle Noclip", function() noclipEnabled = not noclipEnabled end)
-
--- 3. BRING ITEMS
-local function Bring(name)
-    for _, v in pairs(workspace:GetDescendants()) do
-        if v.Name:lower():find(name:lower()) and (v:IsA("BasePart") or v:IsA("Model")) then
-            local part = v:IsA("Model") and (v.PrimaryPart or v:FindFirstChildWhichIsA("BasePart")) or v
-            if part then part.CFrame = lplayer.Character.HumanoidRootPart.CFrame end
-        end
-    end
-end
-AddBtn(itemPg, "⚙️ Bring Scrap (Metal)", function() Bring("Scrap") Bring("Metal") end)
-AddBtn(itemPg, "🔩 Bring Bolts", function() Bring("Bolt") end)
-AddBtn(itemPg, "🪵 Bring Logs", function() Bring("Log") end)
-
--- 4. GOD MODE & RESCUE
-local god = false
-AddBtn(mainPg, "🛡️ God Mode", function() god = not god
-    task.spawn(function() while god do if lplayer.Character and lplayer.Character:FindFirstChild("Humanoid") then lplayer.Character.Humanoid.Health = 100 end task.wait(0.1) end end)
-end)
-AddBtn(mainPg, "👶 Rescue All 4 Kids", function()
-    local kids = {"Dino Kid", "Kraken Kid", "Squid Kid", "Koala Kid"}
-    for _, k in pairs(kids) do for _, v in pairs(workspace:GetDescendants()) do if v.Name == k and v:FindFirstChild("HumanoidRootPart") then v.HumanoidRootPart.CFrame = lplayer.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0) end end end
-end)
-
--- Header & Close
-local t = Instance.new("TextLabel", main); t.Size = UDim2.new(1, 0, 0, 45); t.Text = "🐾 White Cat Hub 🐾"
-t.TextColor3 = Color3.fromRGB(255, 182, 193); t.Font = "GothamBold"; t.TextSize = 18
-local c = Instance.new("TextButton", main); c.Size = UDim2.new(0, 30, 0, 30); c.Position = UDim2.new(1, -35, 0, 10)
-c.Text = "X"; c.BackgroundColor3 = Color3.fromRGB(255, 100, 100); c.MouseButton1Click:Connect(function() sg:Destroy() end)
