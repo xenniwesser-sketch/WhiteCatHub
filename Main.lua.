@@ -1,36 +1,61 @@
--- Delta Specific White Cat Hub
+-- FULL COMBINED WHITE CAT HUB
 local CoreGui = game:GetService("CoreGui")
+local TweenService = game:GetService("TweenService")
 
--- Check if old UI exists and delete it
-if CoreGui:FindFirstChild("WhiteCatDelta") then
-    CoreGui.WhiteCatDelta:Destroy()
+-- 1. CLEAN UP OLD UI
+if CoreGui:FindFirstChild("WhiteCatHub") then
+    CoreGui.WhiteCatHub:Destroy()
 end
 
-local screen = Instance.new("ScreenGui")
-screen.Name = "WhiteCatDelta"
-screen.Parent = CoreGui
+-- 2. CREATE UI CONTAINER
+local sg = Instance.new("ScreenGui")
+sg.Name = "WhiteCatHub"
+sg.Parent = CoreGui
 
--- Special Delta Function to hide UI from Game Scripts
-if syn and syn.protect_gui then
-    syn.protect_gui(screen)
-end
+-- 3. MAIN MENU FRAME
+local main = Instance.new("Frame", sg)
+main.Size = UDim2.new(0, 300, 0, 200)
+main.Position = UDim2.new(0.5, -150, 0.4, 0)
+main.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+main.Active = true
+main.Draggable = true
+Instance.new("UICorner", main).CornerRadius = UDim.new(0, 15)
 
-local frame = Instance.new("Frame", screen)
-frame.Size = UDim2.new(0, 220, 0, 120)
-frame.Position = UDim2.new(0.5, -110, 0.3, 0)
-frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-frame.Active = true
-frame.Draggable = true
-
-local corner = Instance.new("UICorner", frame)
-corner.CornerRadius = UDim.new(0, 20)
-
-local title = Instance.new("TextLabel", frame)
-title.Size = UDim2.new(1, 0, 1, 0)
-title.Text = "🐾 White Cat Hub 🐾\nStatus: Online (Delta)"
+-- 4. TITLE BAR
+local title = Instance.new("TextLabel", main)
+title.Size = UDim2.new(1, 0, 0, 45)
+title.Text = "🐾 White Cat Hub 🐾"
 title.TextColor3 = Color3.fromRGB(255, 182, 193)
 title.Font = Enum.Font.GothamBold
-title.TextSize = 18
+title.TextSize = 22
 title.BackgroundTransparency = 1
 
-print("White Cat Hub injected via Delta!")
+-- 5. STATUS / LOADING MESSAGE
+local status = Instance.new("TextLabel", main)
+status.Size = UDim2.new(1, 0, 0, 30)
+status.Position = UDim2.new(0, 0, 0, 50)
+status.Text = "Status: Script Active!"
+status.TextColor3 = Color3.fromRGB(150, 150, 150)
+status.Font = Enum.Font.Gotham
+status.TextSize = 14
+status.BackgroundTransparency = 1
+
+-- 6. ADD A BUTTON (Speed Example)
+local btn = Instance.new("TextButton", main)
+btn.Size = UDim2.new(0, 200, 0, 40)
+btn.Position = UDim2.new(0.5, -100, 0, 100)
+btn.BackgroundColor3 = Color3.fromRGB(255, 182, 193)
+btn.Text = "Toggle Speed (x2)"
+btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+btn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 10)
+
+btn.MouseButton1Click:Connect(function()
+    local char = game.Players.LocalPlayer.Character
+    if char and char:FindFirstChild("Humanoid") then
+        char.Humanoid.WalkSpeed = 32
+        status.Text = "Speed Boosted!"
+    end
+end)
+
+print("White Cat Hub: Fully Loaded!")
