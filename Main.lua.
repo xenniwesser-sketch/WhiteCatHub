@@ -1,61 +1,130 @@
--- FULL COMBINED WHITE CAT HUB
 local CoreGui = game:GetService("CoreGui")
-local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local lplayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
 
--- 1. CLEAN UP OLD UI
-if CoreGui:FindFirstChild("WhiteCatHub") then
-    CoreGui.WhiteCatHub:Destroy()
-end
+if CoreGui:FindFirstChild("WhiteCatHub") then CoreGui.WhiteCatHub:Destroy() end
 
--- 2. CREATE UI CONTAINER
-local sg = Instance.new("ScreenGui")
+local sg = Instance.new("ScreenGui", CoreGui)
 sg.Name = "WhiteCatHub"
-sg.Parent = CoreGui
 
--- 3. MAIN MENU FRAME
 local main = Instance.new("Frame", sg)
-main.Size = UDim2.new(0, 300, 0, 200)
-main.Position = UDim2.new(0.5, -150, 0.4, 0)
+main.Size = UDim2.new(0, 300, 0, 400)
+main.Position = UDim2.new(0.5, -150, 0.3, 0)
 main.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 main.Active = true
 main.Draggable = true
 Instance.new("UICorner", main).CornerRadius = UDim.new(0, 15)
 
--- 4. TITLE BAR
 local title = Instance.new("TextLabel", main)
 title.Size = UDim2.new(1, 0, 0, 45)
-title.Text = "🐾 White Cat Hub 🐾"
+title.Text = "🐾 White Cat: 99 Nights 🐾"
 title.TextColor3 = Color3.fromRGB(255, 182, 193)
 title.Font = Enum.Font.GothamBold
-title.TextSize = 22
+title.TextSize = 20
 title.BackgroundTransparency = 1
 
--- 5. STATUS / LOADING MESSAGE
-local status = Instance.new("TextLabel", main)
-status.Size = UDim2.new(1, 0, 0, 30)
-status.Position = UDim2.new(0, 0, 0, 50)
-status.Text = "Status: Script Active!"
-status.TextColor3 = Color3.fromRGB(150, 150, 150)
-status.Font = Enum.Font.Gotham
-status.TextSize = 14
-status.BackgroundTransparency = 1
+local scroll = Instance.new("ScrollingFrame", main)
+scroll.Size = UDim2.new(1, -20, 1, -60)
+scroll.Position = UDim2.new(0, 10, 0, 50)
+scroll.BackgroundTransparency = 1
+scroll.CanvasSize = UDim2.new(0, 0, 2, 0) -- Extra space for many buttons
+scroll.ScrollBarThickness = 3
 
--- 6. ADD A BUTTON (Speed Example)
-local btn = Instance.new("TextButton", main)
-btn.Size = UDim2.new(0, 200, 0, 40)
-btn.Position = UDim2.new(0.5, -100, 0, 100)
-btn.BackgroundColor3 = Color3.fromRGB(255, 182, 193)
-btn.Text = "Toggle Speed (x2)"
-btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-btn.Font = Enum.Font.GothamBold
-Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 10)
+local list = Instance.new("UIListLayout", scroll)
+list.Padding = UDim.new(0, 8)
+list.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
-btn.MouseButton1Click:Connect(function()
-    local char = game.Players.LocalPlayer.Character
-    if char and char:FindFirstChild("Humanoid") then
-        char.Humanoid.WalkSpeed = 32
-        status.Text = "Speed Boosted!"
+local function CreateButton(txt, color, callback)
+    local btn = Instance.new("TextButton", scroll)
+    btn.Size = UDim2.new(0, 240, 0, 35)
+    btn.BackgroundColor3 = color or Color3.fromRGB(255, 182, 193)
+    btn.Text = txt
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 13
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+    btn.MouseButton1Click:Connect(callback)
+end
+
+-- 1. INFINITE STAMINA
+CreateButton("⚡ Infinite Stamina", Color3.fromRGB(173, 216, 230), function()
+    local stats = lplayer:FindFirstChild("leaderstats") or lplayer:FindFirstChild("Stats")
+    if stats and stats:FindFirstChild("Stamina") then
+        stats.Stamina.Value = 999999
+    end
+    -- Loop to keep it full
+    task.spawn(function()
+        while task.wait(1) do
+            if lplayer.Character:FindFirstChild("Stamina") then
+                lplayer.Character.Stamina.Value = 100
+            end
+        end
+    end)
+end)
+
+-- 2. RESCUE ALL 4 KIDS (Teleport them to you/Safezone)
+CreateButton("👶 Rescue All 4 Kids", Color3.fromRGB(255, 215, 0), function()
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v.Name == "Kid" or v.Name == "Child" then
+            v.HumanoidRootPart.CFrame = lplayer.Character.HumanoidRootPart.CFrame + Vector3.new(0, 2, 0)
+        end
     end
 end)
 
-print("White Cat Hub: Fully Loaded!")
+-- 3. AUTO CHOP WOOD
+local autoChop = false
+CreateButton("🪓 Auto Chop Wood", Color3.fromRGB(144, 238, 144), function()
+    autoChop = not autoChop
+    task.spawn(function()
+        while autoChop do
+            for _, tree in pairs(workspace:GetChildren()) do
+                if tree.Name == "Tree" and lplayer.Character then
+                    lplayer.Character.HumanoidRootPart.CFrame = tree.PrimaryPart.CFrame
+                    task.wait(0.5)
+                    -- Simulate Click/Hit here if game uses Tools
+                end
+            end
+            task.wait(1)
+        end
+    end)
+end)
+
+-- 4. TELEPORT TO PLACES
+CreateButton("🚩 TP: Cabin / Safezone", Color3.fromRGB(200, 200, 200), function()
+    lplayer.Character.HumanoidRootPart.CFrame = CFrame.new(0, 50, 0) -- Replace with real Cabin Coords
+end)
+
+-- 5. FLY (Simple)
+local flying = false
+CreateButton("🕊️ Toggle Fly", Color3.fromRGB(255, 182, 193), function()
+    flying = not flying
+    local bv = Instance.new("BodyVelocity", lplayer.Character.HumanoidRootPart)
+    bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+    task.spawn(function()
+        while flying do
+            bv.Velocity = workspace.CurrentCamera.CFrame.LookVector * 50
+            task.wait()
+        end
+        bv:Destroy()
+    end)
+end)
+
+-- 6. ESP
+CreateButton("👁️ Player/Zombie ESP", Color3.fromRGB(255, 100, 100), function()
+    for _, v in pairs(workspace:GetChildren()) do
+        if v:FindFirstChild("Humanoid") and not v:FindFirstChild("Highlight") then
+            Instance.new("Highlight", v).FillColor = Color3.fromRGB(255, 0, 0)
+        end
+    end
+end)
+
+-- CLOSE
+local close = Instance.new("TextButton", main)
+close.Size = UDim2.new(0, 30, 0, 30)
+close.Position = UDim2.new(1, -35, 0, 5)
+close.Text = "X"
+close.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+close.TextColor3 = Color3.fromRGB(255, 255, 255)
+Instance.new("UICorner", close).CornerRadius = UDim.new(1, 0)
+close.MouseButton1Click:Connect(function() sg:Destroy() end)
