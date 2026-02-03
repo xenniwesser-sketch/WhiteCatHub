@@ -1,43 +1,37 @@
--- White Cat Hub (Delta Optimized - 3s Intro)
+-- White Cat Hub (Key System Edition)
 local CoreGui, Players, RunService, UserInputService = game:GetService("CoreGui"), game:GetService("Players"), game:GetService("RunService"), game:GetService("UserInputService")
 local lplayer = Players.LocalPlayer
+local correctKey = "Kikicatwalk"
 
--- --- FAST HELLO KITTY INTRO (3 SECONDS) ---
-local function PlayIntro()
-    local introSg = Instance.new("ScreenGui", CoreGui); introSg.Name = "IntroScreen"
-    
-    local bg = Instance.new("Frame", introSg)
-    bg.Size = UDim2.new(1, 0, 1, 0); bg.BackgroundColor3 = Color3.fromRGB(255, 240, 245)
-    
-    local introImg = Instance.new("ImageLabel", bg)
-    introImg.Size = UDim2.new(0, 0, 0, 0); introImg.Position = UDim2.new(0.5, 0, 0.5, 0)
-    introImg.Image = "rbxassetid://13580556209" -- Pink Hello Kitty
-    introImg.BackgroundTransparency = 1; introImg.AnchorPoint = Vector2.new(0.5, 0.5)
-    
-    local bowLeft = Instance.new("ImageLabel", bg)
-    bowLeft.Size = UDim2.new(0, 50, 0, 50); bowLeft.Position = UDim2.new(0.2, 0, 0.2, 0)
-    bowLeft.Image = "rbxassetid://12128711437"; bowLeft.BackgroundTransparency = 1 -- Pink Bow
-
-    local bowRight = Instance.new("ImageLabel", bg)
-    bowRight.Size = UDim2.new(0, 50, 0, 50); bowRight.Position = UDim2.new(0.8, 0, 0.2, 0)
-    bowRight.Image = "rbxassetid://12128711437"; bowRight.BackgroundTransparency = 1
-
-    -- Animation Sequence (Total 3s)
-    introImg:TweenSize(UDim2.new(0, 180, 0, 180), "Out", "Back", 0.5)
-    task.wait(2.2) -- Stay time
-    introImg:TweenSize(UDim2.new(0, 0, 0, 0), "In", "Quad", 0.3)
-    task.wait(0.3)
-    introSg:Destroy()
-end
-task.spawn(PlayIntro)
-
--- --- MAIN HUB ---
 if CoreGui:FindFirstChild("WhiteCatHub") then CoreGui.WhiteCatHub:Destroy() end
 local sg = Instance.new("ScreenGui", CoreGui); sg.Name = "WhiteCatHub"
 
 local meow = Instance.new("Sound", sg)
 meow.SoundId = "rbxassetid://12222200"; meow.Volume = 0.6
 
+-- --- KEY SYSTEM UI ---
+local KeyFrame = Instance.new("Frame", sg)
+KeyFrame.Size = UDim2.new(0, 250, 0, 150); KeyFrame.Position = UDim2.new(0.5, -125, 0.4, 0)
+KeyFrame.BackgroundColor3 = Color3.fromRGB(255, 240, 245)
+Instance.new("UICorner", KeyFrame).CornerRadius = UDim.new(0, 15)
+
+local KeyTitle = Instance.new("TextLabel", KeyFrame)
+KeyTitle.Size = UDim2.new(1, 0, 0, 40); KeyTitle.Text = "Enter Key"
+KeyTitle.TextColor3 = Color3.fromRGB(255, 182, 193); KeyTitle.Font = "GothamBold"; KeyTitle.TextSize = 16; KeyTitle.BackgroundTransparency = 1
+
+local KeyInput = Instance.new("TextBox", KeyFrame)
+KeyInput.Size = UDim2.new(0.8, 0, 0, 35); KeyInput.Position = UDim2.new(0.1, 0, 0.35, 0)
+KeyInput.PlaceholderText = "Type Key Here..."; KeyInput.Text = ""
+KeyInput.BackgroundColor3 = Color3.new(1, 1, 1); KeyInput.Font = "Gotham"; KeyInput.TextSize = 14
+Instance.new("UICorner", KeyInput)
+
+local CheckBtn = Instance.new("TextButton", KeyFrame)
+CheckBtn.Size = UDim2.new(0.8, 0, 0, 30); CheckBtn.Position = UDim2.new(0.1, 0, 0.7, 0)
+CheckBtn.Text = "Unlock Hub"; CheckBtn.BackgroundColor3 = Color3.fromRGB(255, 182, 193)
+CheckBtn.TextColor3 = Color3.new(1, 1, 1); CheckBtn.Font = "GothamBold"
+Instance.new("UICorner", CheckBtn)
+
+-- --- MAIN HUB UI (Start Hidden) ---
 local main = Instance.new("Frame", sg)
 main.Size = UDim2.new(0, 250, 0, 340); main.Position = UDim2.new(0.5, -125, 0.3, 0)
 main.BackgroundColor3 = Color3.fromRGB(255, 255, 255); main.Visible = false
@@ -51,14 +45,27 @@ credits.Size = UDim2.new(1, 0, 0, 20); credits.Position = UDim2.new(0, 0, 1, -20
 credits.Text = "maded by : kiki"; credits.TextColor3 = Color3.fromRGB(255, 182, 193)
 credits.Font = "GothamItalic"; credits.TextSize = 11; credits.BackgroundTransparency = 1
 
--- Toggle Button (Compact)
 local toggleBtn = Instance.new("TextButton", sg)
 toggleBtn.Size = UDim2.new(0, 45, 0, 45); toggleBtn.Position = UDim2.new(0, 15, 0.5, 0)
-toggleBtn.Text = "CAT"; toggleBtn.BackgroundColor3 = Color3.new(1, 1, 1)
+toggleBtn.Text = "CAT"; toggleBtn.BackgroundColor3 = Color3.new(1, 1, 1); toggleBtn.Visible = false
 Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(1, 0)
 toggleBtn.MouseButton1Click:Connect(function() meow:Play(); main.Visible = not main.Visible end)
 
--- Functional Logic
+-- Key Logic
+CheckBtn.MouseButton1Click:Connect(function()
+    if KeyInput.Text == correctKey then
+        meow:Play()
+        KeyFrame:Destroy()
+        toggleBtn.Visible = true
+        main.Visible = true
+    else
+        KeyInput.Text = ""; KeyInput.PlaceholderText = "Wrong Key!"
+        task.wait(1)
+        KeyInput.PlaceholderText = "Type Key Here..."
+    end
+end)
+
+-- Functions
 local function BringItems(itemName, targetName)
     local target = workspace:FindFirstChild(targetName, true)
     if target then
@@ -88,7 +95,7 @@ local function CreateSaplingWall()
     end
 end
 
--- UI List
+-- UI Content
 local container = Instance.new("ScrollingFrame", main)
 container.Size = UDim2.new(1, -20, 1, -90); container.Position = UDim2.new(0, 10, 0, 50); container.BackgroundTransparency = 1
 container.ScrollBarThickness = 0; Instance.new("UIListLayout", container).Padding = UDim.new(0, 5)
